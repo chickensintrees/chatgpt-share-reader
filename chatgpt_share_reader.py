@@ -86,6 +86,7 @@ import json
 import pathlib
 import re
 import sys
+import urllib.parse
 import urllib.request
 
 __all__ = [
@@ -516,8 +517,14 @@ def decode_html(html, share_id=""):
 # Command line
 # ---------------------------------------------------------------------------
 def _share_id_from(arg):
-    """Derive a short id for output filenames from an id or URL."""
-    return arg.rstrip("/").split("/")[-1] or "thread"
+    """Derive a short id for output filenames from an id or URL.
+
+    Query strings and fragments are dropped, so a link copied from the
+    browser (``.../share/<id>?ogimg=plain`` or ``.../share/<id>#top``) gives
+    the bare ``<id>``. A ``?`` is not a legal filename character on Windows.
+    """
+    path = urllib.parse.urlsplit(arg).path if "://" in arg else arg.split("?")[0].split("#")[0]
+    return path.rstrip("/").split("/")[-1] or "thread"
 
 
 def main(argv=None):
