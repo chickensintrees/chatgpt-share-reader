@@ -152,9 +152,28 @@ def test_missing_promise_line_is_tolerated():
     assert "hello" in md and "hi there" in md, md
 
 
+def test_share_id_strips_query_and_fragment():
+    """Links copied from a browser often carry ?query or #fragment suffixes."""
+    sid = "6af12640-7654-83ea-bfbb-1c1414b62d2b"
+    cases = [
+        sid,
+        f"{sid}?ogimg=plain",
+        f"https://chatgpt.com/share/{sid}",
+        f"https://chatgpt.com/share/{sid}/",
+        f"https://chatgpt.com/share/{sid}?ogimg=plain",
+        f"https://chatgpt.com/share/{sid}#top",
+        f"https://chatgpt.com/share/{sid}/?a=1&b=2#frag",
+    ]
+    for c in cases:
+        assert csr._share_id_from(c) == sid, (c, csr._share_id_from(c))
+    assert csr._share_id_from("https://chatgpt.com/share/") == "share"
+    assert csr._share_id_from("") == "thread"
+
+
 if __name__ == "__main__":
     test_decode_two_turns()
     test_split_enqueue_chunks()
     test_multimodal_and_code_parts()
     test_missing_promise_line_is_tolerated()
+    test_share_id_strips_query_and_fragment()
     print("OK: all tests passed")
